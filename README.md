@@ -73,7 +73,7 @@ knight_v8 is ES6 capable:
 False
 ```
 
-Please do not new a lot of Knight instances, if you have to do this, please use release the instance after using.
+Please do not new a lot of Knight instances, if you have to do this, call dispose method of the instance after using out.
 
 ```python
 >>> ctx = Knight()
