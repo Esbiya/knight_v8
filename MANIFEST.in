@@ -1,0 +1,5 @@
+include MANIFEST.in
+include README.rst
+include knight_v8/__init__.py
+include knight_v8/libv8py.dylib
+global-exclude __pycache__ *.py[cod]
