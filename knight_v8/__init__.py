@@ -1,34 +1,36 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, sys, sysconfig
+import os, sys
 import atexit, json
 import _ctypes, ctypes
 
 
+try:
+    import pkg_resources
+except ImportError:
+    pkg_resources = None  # pragma: no cover
+    
+
 name = u"v8py"
 
 
-def _get_libc_name():
-    """Return the libc name of the current system."""
-    target = sysconfig.get_config_var("HOST_GNU_TYPE")
-    if target is not None and target.endswith("musl"):
-        return "muslc"
-    return "glibc"
-
-
 def _get_lib_path(name):
-    """Return the path of the library called `name` on the current system."""
     if os.name == "posix" and sys.platform == "darwin":
         prefix, ext = "lib", ".dylib"
     elif sys.platform == "win32":
         prefix, ext = "lib", ".dll"
     else:
-        prefix, ext = "lib", ".{}.so".format(_get_libc_name())
+        prefix, ext = "lib", ".so"
     fn = None
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass is not None:
         fn = os.path.join(meipass, prefix + name + ext)
+    if fn is None and pkg_resources is not None:
+        try:
+            fn = pkg_resources.resource_filename("knight_v8", prefix + name + ext)
+        except Exception:
+            pass
     if fn is None:
         root_dir = os.path.dirname(os.path.abspath(__file__))
         fn = os.path.join(root_dir, prefix + name + ext)
@@ -40,7 +42,7 @@ EXTENSION_NAME = os.path.basename(EXTENSION_PATH) if EXTENSION_PATH is not None 
 
 
 if sys.version_info[0] < 3:
-    UNICODE_TYPE = unicode  # noqa: F821
+    UNICODE_TYPE = unicode
 else:
     UNICODE_TYPE = str
     
@@ -63,9 +65,9 @@ def _build_ext_handle():
     _ext_handle.free_evaluator.restype = ctypes.c_void_p
     _ext_handle.eval.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     _ext_handle.eval.restype = ctypes.c_char_p
-    _ext_handle.initialize()
-
+    _ext_handle.initialize()    
     return _ext_handle
+
 
 _ext = _build_ext_handle()
 
